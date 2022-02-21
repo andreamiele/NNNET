@@ -35,7 +35,7 @@ git clone https://github.com/andreamiele/NNNET.git
 cd NNNET
 ```
 
-2. Open the solution NNET.csproj with VS or VSCode with .NET core and solution explorer extensions.
+2. Open the solution NNNET.csproj with VS or VSCode with .NET core and solution explorer extensions.
 
 ## How to use it
 
