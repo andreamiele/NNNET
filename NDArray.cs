@@ -5,129 +5,80 @@ using System.Linq;
 
 namespace NNNET
 {
-    public class NDArray
+    public class NDimensionArray
     {
-        /// <summary>
-        /// Variable to hold the data in form of array
-        /// </summary>
-        private double[] variable;
-
-        /// <summary>
-        /// Shape of the dataset, can be anything from 1D, 2D or 3D. For 2D: (3, 5) which will be a matrix of size 3 x 5
-        /// </summary>
-        public int[] Shape
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// The number of elements the array will hold.
-        /// </summary>
-        public int Elements
+        public double[] data
         {
             get
             {
-                return Shape.Aggregate((a, b) => a * b);
+                return var;
             }
         }
+        private double[] var; // hold data 
+        public int[] shape { get; set; } // shape of the dataset (1D,2D or 3D)
 
-        /// <summary>
-        /// Declaration for the NDArray with Shape as parameter
-        /// </summary>
-        /// <param name="shape"></param>
-        public NDArray(params int[] shape)
+        public int elmts
         {
-            Shape = shape;
-            variable = new double[Elements];
-        }
-
-        /// <summary>
-        /// Helper function to load the data in the NDArray
-        /// </summary>
-        /// <param name="data"></param>
-        public void Load(params double[] data)
-        {
-            variable = data;
-        }
-
-        /// <summary>
-        /// Fill the array with constant value
-        /// </summary>
-        /// <param name="value"></param>
-        public void Fill(double value)
-        {
-            for (int i = 0; i < Elements; i++)
+            get
             {
-                variable[i] = value;
+                return shape.Aggregate((x, y) => x * y);
             }
-        }
+        } // Nber of elmts in the array
 
-        /// <summary>
-        /// Get the value at specific index
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <returns></returns>
+        public NDimensionArray(params int[] shape)
+        {
+            this.shape = shape;
+            var = new double[elmts];
+        } // Constructor for NDimensionArray with shape as parameter
+
+        public void Loader(params double[] datas)
+        {
+            var = datas;
+        } // Load datas in a NDimensionArray
+        public void Filler(double x)
+        {
+            for (int i = 0; i < this.elmts; i++)
+            {
+                var[i] = x;
+            }
+        } // Filler the NDimensionArray with a constant, x
+
         public double this[params int[] indices]
         {
             get
             {
-                var strides = GetContiguousStride();
-                long index = 0;
-                for (int i = 0; i < indices.Length; ++i)
+                var st = GetSt();
+                long j = 0;
+                for (int i = 0; i < indices.Length; i++)
                 {
-                    index += indices[i] * strides[i];
+                    j += indices[i] * st[i];
                 }
-
-                return variable[index];
+                return var[j];
             }
             set
             {
-                var strides = GetContiguousStride();
-                long index = 0;
-                for (int i = 0; i < indices.Length; ++i)
+                var st = GetSt();
+                long j = 0;
+                for (int i = 0; i < indices.Length; i++)
                 {
-                    index += indices[i] * strides[i];
+                    j += indices[i] * st[i];
                 }
-
-                variable[index] = value;
+                var[j] = value;
             }
         }
 
-        /// <summary>
-        /// Access or assign the value of the tensor using index
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public double this[int index]
+        public int[] GetSt()
         {
-            get
+            int f = 1;
+            var st = new int[shape.Length];
+            for (int i = shape.Length - 1; i >= 0; --i)
             {
-                return variable[index];
+                st[i] = f;
+                f *= shape[i];
             }
-            set
-            {
-                variable[index] = value;
-            }
+            return st;
         }
 
-        public int[] GetContiguousStride()
-        {
-            int acc = 1;
-            var stride = new int[Shape.Length];
-
-            for (int i = Shape.Length - 1; i >= 0; --i)
-            {
-                stride[i] = acc;
-                acc *= Shape[i];
-            }
-
-            return stride;
-        }
-
-        /// <summary>
-        /// Print the dataset in matrix form
-        /// </summary>
         public void Print(string title = "")
         {
             if (!string.IsNullOrWhiteSpace(title))
@@ -135,10 +86,10 @@ namespace NNNET
                 Console.WriteLine(title);
             }
 
-            Console.WriteLine("---------{0}----------", string.Join(" x ", Shape));
-            for (int i = 0; i < Shape[0]; i++)
+            Console.WriteLine("---------{0}----------", string.Join(" x ", shape));
+            for (int i = 0; i < shape[0]; i++)
             {
-                for (int j = 0; j < Shape[1]; j++)
+                for (int j = 0; j < shape[1]; j++)
                 {
                     Console.Write(Math.Round(this[i, j], 2) + "  ");
                 }
@@ -149,152 +100,61 @@ namespace NNNET
             Console.WriteLine("-----------------------\n\n");
         }
 
-        public double[] Data
+
+
+        public static NDimensionArray operator +(NDimensionArray x, NDimensionArray y)
         {
-            get
+            NDimensionArray z = new NDimensionArray(x.shape);
+
+            for (int i = 0; i < x.elmts; i++)
             {
-                return variable;
+                z[i] = x[i] + y[i];
             }
-        }
-
-        /// <summary>
-        /// Addition of two NDArray
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator +(NDArray a, NDArray b)
+            return z;
+        } // Addition of two NDimensionArray
+        public static NDimensionArray operator +(NDimensionArray a, double b)
         {
-            NDArray r = new NDArray(a.Shape);
-
-            for (int i = 0; i < a.Elements; i++)
-            {
-                r[i] = a[i] + b[i];
-            }
-
-            return r;
-        }
-
-        public static NDArray operator +(NDArray a, double b)
-        {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
             return a + t_b;
         }
 
-        public static NDArray operator +(double a, NDArray b)
+        public static NDimensionArray operator +(double a, NDimensionArray b)
         {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
             return t_a + b;
         }
 
-        /// <summary>
-        /// Subtraction of two NDArray
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator -(NDArray a, NDArray b)
+        public static NDimensionArray operator -(NDimensionArray x, NDimensionArray y)
         {
-            NDArray r = new NDArray(a.Shape);
+            NDimensionArray z = new NDimensionArray(x.shape);
 
-            for (int i = 0; i < a.Elements; i++)
+            for (int i = 0; i < x.elmts; i++)
             {
-                r[i] = a[i] - b[i];
+                z[i] = x[i] - y[i];
             }
-
-            return r;
-        }
-
-        public static NDArray operator -(NDArray a, double b)
+            return z;
+        } // Substraction of two NDimensionArray
+        public static NDimensionArray operator -(NDimensionArray a, double b)
         {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
             return a - t_b;
         }
 
-        public static NDArray operator -(double a, NDArray b)
+        public static NDimensionArray operator -(double a, NDimensionArray b)
         {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
             return t_a - b;
         }
 
-        /// <summary>
-        /// Multiplication of two NDArray
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator *(NDArray a, NDArray b)
+        public static NDimensionArray operator -(NDimensionArray a)
         {
-            NDArray r = new NDArray(a.Shape);
+            NDimensionArray r = new NDimensionArray(a.shape);
 
-            for (int i = 0; i < a.Elements; i++)
-            {
-                r[i] = a[i] * b[i];
-            }
-
-            return r;
-        }
-
-        public static NDArray operator *(NDArray a, double b)
-        {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
-            return a * t_b;
-        }
-
-        public static NDArray operator *(double a, NDArray b)
-        {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
-            return t_a * b;
-        }
-
-        /// <summary>
-        /// Division of two NDArray
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator /(NDArray a, NDArray b)
-        {
-            NDArray r = new NDArray(a.Shape);
-
-            for (int i = 0; i < a.Elements; i++)
-            {
-                r[i] = a[i] / b[i];
-            }
-
-            return r;
-        }
-
-        public static NDArray operator /(NDArray a, double b)
-        {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
-            return a / t_b;
-        }
-
-        public static NDArray operator /(double a, NDArray b)
-        {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
-            return t_a / b;
-        }
-
-        /// <summary>
-        /// Negates the values in the tensor
-        /// </summary>
-        /// <param name="a"></param>
-        /// <returns></returns>
-        public static NDArray operator -(NDArray a)
-        {
-            NDArray r = new NDArray(a.Shape);
-
-            for (int i = 0; i < a.Elements; i++)
+            for (int i = 0; i < a.elmts; i++)
             {
                 r[i] = -a[i];
             }
@@ -302,17 +162,59 @@ namespace NNNET
             return r;
         }
 
-        /// <summary>
-        /// Check a == b between two tensor elementwise
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator ==(NDArray a, NDArray b)
+        public static NDimensionArray operator *(NDimensionArray x, NDimensionArray y)
         {
-            NDArray r = new NDArray(a.Shape);
+            NDimensionArray z = new NDimensionArray(x.shape);
 
-            for (int i = 0; i < a.Elements; i++)
+            for (int i = 0; i < x.elmts; i++)
+            {
+                z[i] = x[i] * y[i];
+            }
+            return z;
+        } // Multiplication of two NDimensionArray
+        public static NDimensionArray operator *(NDimensionArray a, double b)
+        {
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
+            return a * t_b;
+        }
+
+        public static NDimensionArray operator *(double a, NDimensionArray b)
+        {
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
+            return t_a * b;
+        }
+
+        public static NDimensionArray operator /(NDimensionArray x, NDimensionArray y)
+        {
+            NDimensionArray z = new NDimensionArray(x.shape);
+
+            for (int i = 0; i < x.elmts; i++)
+            {
+                z[i] = x[i] / y[i];
+            }
+            return z;
+        } // Division of two NDimensionArray
+        public static NDimensionArray operator /(NDimensionArray a, double b)
+        {
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
+            return a / t_b;
+        }
+
+        public static NDimensionArray operator /(double a, NDimensionArray b)
+        {
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
+            return t_a / b;
+        }
+
+        public static NDimensionArray operator ==(NDimensionArray a, NDimensionArray b)
+        {
+            NDimensionArray r = new NDimensionArray(a.shape);
+
+            for (int i = 0; i < a.elmts; i++)
             {
                 r[i] = a[i] == b[i] ? 1 : 0;
             }
@@ -320,31 +222,24 @@ namespace NNNET
             return r;
         }
 
-        public static NDArray operator ==(NDArray a, double b)
+        public static NDimensionArray operator ==(NDimensionArray a, double b)
         {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
             return a == t_b;
         }
 
-        public static NDArray operator ==(double a, NDArray b)
+        public static NDimensionArray operator ==(double a, NDimensionArray b)
         {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
             return t_a == b;
         }
-
-        /// <summary>
-        /// Check a != b between two tensor elementwise
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator !=(NDArray a, NDArray b)
+        public static NDimensionArray operator !=(NDimensionArray a, NDimensionArray b)
         {
-            NDArray r = new NDArray(a.Shape);
+            NDimensionArray r = new NDimensionArray(a.shape);
 
-            for (int i = 0; i < a.Elements; i++)
+            for (int i = 0; i < a.elmts; i++)
             {
                 r[i] = a[i] != b[i] ? 1 : 0;
             }
@@ -352,31 +247,24 @@ namespace NNNET
             return r;
         }
 
-        public static NDArray operator !=(NDArray a, double b)
+        public static NDimensionArray operator !=(NDimensionArray a, double b)
         {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
             return a != t_b;
         }
 
-        public static NDArray operator !=(double a, NDArray b)
+        public static NDimensionArray operator !=(double a, NDimensionArray b)
         {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
             return t_a != b;
         }
-
-        /// <summary>
-        /// Check a > b between two tensor elementwise
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator >(NDArray a, NDArray b)
+        public static NDimensionArray operator >(NDimensionArray a, NDimensionArray b)
         {
-            NDArray r = new NDArray(a.Shape);
+            NDimensionArray r = new NDimensionArray(a.shape);
 
-            for (int i = 0; i < a.Elements; i++)
+            for (int i = 0; i < a.elmts; i++)
             {
                 r[i] = a[i] > b[i] ? 1 : 0;
             }
@@ -384,31 +272,26 @@ namespace NNNET
             return r;
         }
 
-        public static NDArray operator >(NDArray a, double b)
+        public static NDimensionArray operator >(NDimensionArray a, double b)
         {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
             return a > t_b;
         }
 
-        public static NDArray operator >(double a, NDArray b)
+        public static NDimensionArray operator >(double a, NDimensionArray b)
         {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
             return t_a > b;
         }
 
-        /// <summary>
-        /// Check a >= b between two tensor elementwise
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator >=(NDArray a, NDArray b)
-        {
-            NDArray r = new NDArray(a.Shape);
 
-            for (int i = 0; i < a.Elements; i++)
+        public static NDimensionArray operator >=(NDimensionArray a, NDimensionArray b)
+        {
+            NDimensionArray r = new NDimensionArray(a.shape);
+
+            for (int i = 0; i < a.elmts; i++)
             {
                 r[i] = a[i] >= b[i] ? 1 : 0;
             }
@@ -416,31 +299,26 @@ namespace NNNET
             return r;
         }
 
-        public static NDArray operator >=(NDArray a, double b)
+        public static NDimensionArray operator >=(NDimensionArray a, double b)
         {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
             return a >= t_b;
         }
 
-        public static NDArray operator >=(double a, NDArray b)
+        public static NDimensionArray operator >=(double a, NDimensionArray b)
         {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
             return t_a >= b;
         }
 
-        /// <summary>
-        /// Check a < b between two tensor elementwise
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator <(NDArray a, NDArray b)
-        {
-            NDArray r = new NDArray(a.Shape);
 
-            for (int i = 0; i < a.Elements; i++)
+        public static NDimensionArray operator <(NDimensionArray a, NDimensionArray b)
+        {
+            NDimensionArray r = new NDimensionArray(a.shape);
+
+            for (int i = 0; i < a.elmts; i++)
             {
                 r[i] = a[i] < b[i] ? 1 : 0;
             }
@@ -448,31 +326,26 @@ namespace NNNET
             return r;
         }
 
-        public static NDArray operator <(NDArray a, double b)
+        public static NDimensionArray operator <(NDimensionArray a, double b)
         {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
             return a < t_b;
         }
 
-        public static NDArray operator <(double a, NDArray b)
+        public static NDimensionArray operator <(double a, NDimensionArray b)
         {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
             return t_a < b;
         }
 
-        /// <summary>
-        /// Check a <= b between two tensor elementwise
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static NDArray operator <=(NDArray a, NDArray b)
-        {
-            NDArray r = new NDArray(a.Shape);
 
-            for (int i = 0; i < a.Elements; i++)
+        public static NDimensionArray operator <=(NDimensionArray a, NDimensionArray b)
+        {
+            NDimensionArray r = new NDimensionArray(a.shape);
+
+            for (int i = 0; i < a.elmts; i++)
             {
                 r[i] = a[i] >= b[i] ? 1 : 0;
             }
@@ -480,52 +353,46 @@ namespace NNNET
             return r;
         }
 
-        public static NDArray operator <=(NDArray a, double b)
+        public static NDimensionArray operator <=(NDimensionArray a, double b)
         {
-            NDArray t_b = new NDArray(a.Shape);
-            t_b.Fill(b);
+            NDimensionArray t_b = new NDimensionArray(a.shape);
+            t_b.Filler(b);
             return a <= t_b;
         }
 
-        public static NDArray operator <=(double a, NDArray b)
+        public static NDimensionArray operator <=(double a, NDimensionArray b)
         {
-            NDArray t_a = new NDArray(b.Shape);
-            t_a.Fill(a);
+            NDimensionArray t_a = new NDimensionArray(b.shape);
+            t_a.Filler(a);
             return t_a <= b;
         }
 
-        /// <summary>
-        /// Transpose the axis of 2D array generally referred to matrix transpose
-        /// </summary>
-        /// <returns></returns>
-        public NDArray Transpose()
+        public NDimensionArray Transpose()
         {
-            Operations operations = new Operations();
-            return operations.Transpose(this);
+            Op op = new Op();
+            return op.Transpose(this);
         }
-
-        public NDArray Slice(int start, int count)
-        {
-            start = Shape[1] * start;
-            count = Shape[1] * count;
-
-            var slicedData = variable.Skip(start).Take(count).ToArray();
-
-            NDArray result = new NDArray((slicedData.Length / Shape[1]), Shape[1]);
-            result.Load(slicedData);
-            return result;
-        }
-
         public bool Next(int start, int count)
         {
-            start = Shape[1] * start;
-            count = Shape[1] * count;
-            if (start >= variable.Length)
+            start = shape[1] * start;
+            count = shape[1] * count;
+            if (start >= var.Length)
             {
                 return false;
             }
 
             return true;
+        }
+        public NDimensionArray Slice(int start, int count)
+        {
+            start = shape[1] * start;
+            count = shape[1] * count;
+
+            var slicedData = var.Skip(start).Take(count).ToArray();
+
+            NDimensionArray result = new NDimensionArray((slicedData.Length / shape[1]), shape[1]);
+            result.Loader(slicedData);
+            return result;
         }
     }
 }

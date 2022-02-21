@@ -4,7 +4,15 @@
 
 ## The Project
 
+Currently in engineering school, I'm trying to learn by myself how NN works and how libraries like Pytorch or Keras are working.
+
+That's why I'm trying to implement a NN C# library from scratch, just for educational purposes.
+
 ### Using ...
+
+VSCode
+
+.NET 5.0
 
 ## Getting started
 
