@@ -1,13 +1,60 @@
-# NN-NET
+# NNNET
 
-[Visit GitHub!](www.github.com)
+[Visit my website for more !](www.andreamiele.fr)
 
-Here's [a link to something else][another place].
-Here's [yet another link][another-link].
-And now back to [the first link][another place].
-[another place]: www.github.com
-[another-link]: www.google.com
+## The Project
 
-![c#](https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.pluralsight.com%2Fpaths%2Fcsharp&psig=AOvVaw1a9nEbmmTrA87TnXRgL1ge&ust=1645522610882000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCLCikMi_kPYCFQAAAAAdAAAAABAD)
+### Using ...
 
-> "ratio"
+## Getting started
+
+In order to get a local copy, follow these steps
+
+### Prerequisites
+
+- Dotnet ⩾ 5.0
+
+and/or
+
+- Visual Studio 2019
+
+### Installation
+
+1. Clone the repository :
+
+```sh
+git clone https://github.com/andreamiele/NNNET.git
+cd NNNET
+```
+
+2. Open the solution NNET.csproj with VS or VSCode with .NET core and solution explorer extensions.
+
+## How to use it
+
+### Create a model
+
+### Compile the model
+
+### Load datas
+
+### Train your beautiful model
+
+### Test how efficient your model is
+
+## What demos you can find in this project
+
+## Licence
+
+## Todo
+
+- [ ] Add Tensor Class with operations related
+- [ ] Add Cost function
+- [ ] Add Sigmoid, ReLu and Leaky ReLu functions
+- [ ] Create a Layer class
+- [ ] Create metric classes
+- [ ] Add Optimizer (like SGB, the base optimizer or also Adam)
+- [ ] Add Loss
+- [ ] Add Autograd
+- [ ] Add model
+- [ ] Add Demos : xor, circles classification, MNIST, ...
+- [ ] (?)
